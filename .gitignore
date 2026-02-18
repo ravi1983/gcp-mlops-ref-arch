@@ -1,0 +1,13 @@
+.idea
+*.yml
+__pycache__
+
+.terraform
+.terraform*
+.terraform.lock.hcl
+terraform.tfvars
+
+terraform.tfstate
+terraform.tfstate*
+
+/airflow/include/gcp-key.json

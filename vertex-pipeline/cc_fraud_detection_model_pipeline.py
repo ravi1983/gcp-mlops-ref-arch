@@ -20,6 +20,7 @@ def cc_fraud_detection_model_pipeline(
     # Train model
     dataset = steps.create_dataset(project, location, dataset_name, snapshot_table_name)
     training_op = steps.trigger_automl_training(project, location, training_name, dataset)
+    training_op.container_spec.image_uri = "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.16.1"
 
     # Eval and log model
     default_metrics_log_op = log_model_metrics(model_artifact=training_op.outputs['model'])
@@ -29,7 +30,7 @@ def cc_fraud_detection_model_pipeline(
 
     # Validate and deploy model
     with dsl.If(check_op.outputs['decision'] == 'PASS', name='deploy_decision'):
-        endpoint_op = model_inference_endpoint(project, location)
+        endpoint_op = model_inference_endpoint(project=project, location=location)
         logging.info(f"Endpoint created: {endpoint_op}")
 
         inference_op = steps.import_inference_endpoint(location, endpoint_op)

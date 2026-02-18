@@ -11,3 +11,4 @@ terraform.tfstate
 terraform.tfstate*
 
 /airflow/include/gcp-key.json
+/vertex-pipeline/.venv/

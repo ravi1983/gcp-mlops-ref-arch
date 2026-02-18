@@ -1,14 +1,22 @@
 from typing import NamedTuple
 from kfp import dsl
 
-@dsl.component(base_image = "python:3.12", packages_to_install=["google-cloud-aiplatform", "google-cloud-pipeline-components"])
-def model_inference_endpoint(project, location) -> NamedTuple('outputs', [('endpoint', str)]):
+@dsl.component(
+    base_image = "python:3.10",
+    packages_to_install=[
+        "google-cloud-aiplatform",
+        "google-cloud-pipeline-components",
+        "numpy==1.26.4",
+        "pandas==2.2.2",
+    ]
+)
+def model_inference_endpoint(project: str, location: str) -> NamedTuple('outputs', [('endpoint', str)]):
     from google.cloud import aiplatform
     from collections import namedtuple
 
-    def get_or_create_endpoint(display_name: str):
-        aiplatform.init(project=project, location=location)
+    aiplatform.init(project=project, location=location)
 
+    def get_or_create_endpoint(display_name: str):
         # Check for existing endpoints with this name
         endpoints = aiplatform.Endpoint.list(
             filter=f'display_name="{display_name}"',

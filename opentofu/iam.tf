@@ -8,9 +8,12 @@ resource "google_service_account" "mlops_sa" {
 resource "google_project_iam_member" "mlops_roles" {
   for_each = toset([
     "roles/aiplatform.user",
+    "roles/aiplatform.serviceAgent",
+    "roles/aiplatform.customCodeServiceAgent",
     "roles/bigquery.dataEditor",
-    "roles/storage.objectViewer",
-    "roles/bigquery.admin"
+    "roles/storage.admin",
+    "roles/bigquery.admin",
+    "roles/logging.logWriter"
   ])
 
   project = var.PROJECT_ID

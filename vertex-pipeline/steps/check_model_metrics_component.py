@@ -3,7 +3,7 @@ from typing import NamedTuple
 from kfp import dsl
 from kfp.dsl import Input, Artifact
 
-@dsl.component(base_image = "python:3.12", packages_to_install=["google-cloud-aiplatform"])
+@dsl.component(base_image = "python:3.10", packages_to_install=["google-cloud-aiplatform", "numpy==1.26.4", "pandas==2.2.2"])
 def check_model_metrics(metrics_output: Input[Artifact]) -> NamedTuple('outputs', [('decision', str)]):
     import json
     import logging

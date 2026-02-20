@@ -39,9 +39,9 @@ resource "google_bigquery_dataset" "cc_fraud_dataset" {
   }
 }
 
-resource "google_bigquery_table" "raw_cc_fraud_train_dataset" {
+resource "google_bigquery_table" "raw_cc_fraud_train" {
   dataset_id = google_bigquery_dataset.cc_fraud_dataset.dataset_id
-  table_id = "raw_cc_fraud_train_dataset"
+  table_id = "raw_cc_fraud_train"
   deletion_protection = false
 
   schema = <<EOF
@@ -73,34 +73,18 @@ resource "google_bigquery_table" "raw_cc_fraud_train_dataset" {
 EOF
 }
 
-resource "google_bigquery_table" "cc_fraud_train_dataset" {
+resource "google_bigquery_table" "cc_fraud_train" {
   dataset_id = google_bigquery_dataset.cc_fraud_dataset.dataset_id
-  table_id = "cc_fraud_train_dataset"
+  table_id = "cc_fraud_train"
   deletion_protection = false
 
   schema = <<EOF
 [
-  {"name": "trans_date_trans_time", "type": "TIMESTAMP", "mode": "NULLABLE"},
   {"name": "cc_num", "type": "STRING", "mode": "NULLABLE"},
   {"name": "merchant", "type": "STRING", "mode": "NULLABLE"},
   {"name": "category", "type": "STRING", "mode": "NULLABLE"},
   {"name": "amt", "type": "FLOAT", "mode": "NULLABLE"},
-  {"name": "first", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "last", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "gender", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "street", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "city", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "state", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "zip", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "lat", "type": "FLOAT", "mode": "NULLABLE"},
-  {"name": "long", "type": "FLOAT", "mode": "NULLABLE"},
   {"name": "city_pop", "type": "INTEGER", "mode": "NULLABLE"},
-  {"name": "job", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "dob", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "trans_num", "type": "STRING", "mode": "NULLABLE"},
-  {"name": "unix_time", "type": "INTEGER", "mode": "NULLABLE"},
-  {"name": "merch_lat", "type": "FLOAT", "mode": "NULLABLE"},
-  {"name": "merch_long", "type": "FLOAT", "mode": "NULLABLE"},
   {"name": "avg_transaction_val_24h", "type": "INTEGER", "mode": "NULLABLE"},
   {"name": "failed_attempts_count", "type": "INTEGER", "mode": "NULLABLE"},
   {"name": "feature_timestamp", "type": "TIMESTAMP", "mode": "NULLABLE"},
@@ -119,7 +103,7 @@ resource "google_vertex_ai_feature_group" "cc_fraud_feature_store" {
 
   big_query {
     big_query_source {
-      input_uri = "bq://${google_bigquery_table.cc_fraud_train_dataset.project}.${google_bigquery_table.cc_fraud_train_dataset.dataset_id}.${google_bigquery_table.cc_fraud_train_dataset.table_id}"
+      input_uri = "bq://${google_bigquery_table.cc_fraud_train.project}.${google_bigquery_table.cc_fraud_train.dataset_id}.${google_bigquery_table.cc_fraud_train.table_id}"
     }
     entity_id_columns = ["cc_num"]
   }
@@ -131,8 +115,8 @@ resource "google_vertex_ai_feature_online_store" "cc_fraud_online_feature_store"
 
   bigtable {
     auto_scaling {
-      min_node_count         = 1
-      max_node_count         = 3
+      min_node_count = 1
+      max_node_count = 3
       cpu_utilization_target = 50
     }
   }
@@ -169,4 +153,10 @@ resource "google_vertex_ai_feature_online_store_featureview" "cc_fraud_view" {
       feature_ids = [for f in google_vertex_ai_feature_group_feature.cc_features : f.name]
     }
   }
+}
+
+resource "google_vertex_ai_endpoint" "cc-fraud-check" {
+  name         = "cc-fraud-check"
+  display_name = "CC fraud check"
+  location     = var.REGION
 }

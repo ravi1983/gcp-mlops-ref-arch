@@ -1,9 +1,7 @@
 import os
-import time
 
 from airflow.providers.google.cloud.operators.vertex_ai.feature_store import SyncFeatureViewOperator
-from airflow.sdk import task
-from google.cloud import aiplatform
+from airflow.providers.google.cloud.operators.vertex_ai.pipeline_job import RunPipelineJobOperator
 
 
 def sync_feature_view():
@@ -16,27 +14,21 @@ def sync_feature_view():
         feature_view_id=os.environ.get('FEATURE_VIEW_ID')
     )
 
-@task
-def kickoff_vertex_pipeline(snapshot_table_name):
-    aiplatform.init(
-        project = os.environ.get('GCP_PROJECT'),
-        location = os.environ.get('LOCATION'),
-    )
-    timestamp = str(int(round(time.time() * 1000)))
 
-    job = aiplatform.PipelineJob(
-        display_name = "vertex-mlops-pipeline",
-        template_path = os.environ.get('PIPELINE_TEMPLATE_PATH'),
-        pipeline_root = os.environ.get('PIPELINE_ROOT_GCS'),
-        parameter_values = {
+def kickoff_vertex_pipeline():
+    return RunPipelineJobOperator(
+        task_id="kickoff_vertex_pipeline",
+        project_id=os.environ.get('GCP_PROJECT'),
+        region=os.environ.get('LOCATION'),
+        display_name="vertex-mlops-pipeline",
+        template_path=os.environ.get('PIPELINE_TEMPLATE_PATH'),
+        pipeline_root=os.environ.get('PIPELINE_ROOT_GCS'),
+        parameter_values={
             'project': os.environ.get('GCP_PROJECT'),
             'location': os.environ.get('LOCATION'),
-            'snapshot_table_name': snapshot_table_name,
-            'dataset_name': f'cc-fraud-dataset-{timestamp}',
-            'training_name': f'cc-fraud-training-{timestamp}',
+            'snapshot_table_name': "{{ ti.xcom_pull(task_ids='create_snapshot_task') }}",
+            'dataset_name': "cc-fraud-dataset-{{ macros.datetime.utcnow().strftime('%Y%m%dT%H%M%S') }}",
+            'training_name': "cc-fraud-training-{{ macros.datetime.utcnow().strftime('%Y%m%dT%H%M%S') }}",
         },
-        enable_caching = False,
+        deferrable=True
     )
-
-    job.submit() # Async invocation
-    return job.resource_name

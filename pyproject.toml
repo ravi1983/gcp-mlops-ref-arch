@@ -3,12 +3,14 @@ name = "gcp-mlops-ref-arch"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 dependencies = [
     "google-cloud-aiplatform>=1.137.0",
     "google-cloud-bigquery>=3.40.1",
     "google-cloud-storage>=3.9.0",
     "apache-airflow>=3.1.7",
     "apache-airflow-providers-google>=19.5.0",
-    "google-cloud-pipeline-components>=2.22.0"
+    "google-cloud-pipeline-components>=2.22.0",
+    "numpy<2.0.0",
+    "functions-framework>=3.10.1",
 ]

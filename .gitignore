@@ -12,3 +12,4 @@ terraform.tfstate*
 
 /airflow/include/gcp-key.json
 /vertex-pipeline/.venv/
+/vertex-pipeline/cc_fraud_detection_model_pipeline.json

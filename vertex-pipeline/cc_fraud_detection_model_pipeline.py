@@ -20,7 +20,7 @@ def cc_fraud_detection_model_pipeline(
     # Train model
     dataset = steps.create_dataset(project, location, dataset_name, snapshot_table_name)
     training_op = steps.trigger_automl_training(project, location, training_name, dataset)
-    training_op.container_spec.image_uri = "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.16.1"
+    training_op.container_spec.image = "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.16.1"
 
     # Eval and log model
     default_metrics_log_op = log_model_metrics(model_artifact=training_op.outputs['model'])

@@ -15,12 +15,9 @@ import tasks.vertex_pipeline_tasks as vt_tasks
 def process_training_data():
     raw_task = bq_tasks.process_raw_data_task()
     poll_task = bq_tasks.poll_job_completion(raw_task)
-    snapshot_task = bq_tasks.create_snapshot_task()
 
-    sync_task = vt_tasks.sync_feature_view()
-
-    (raw_task >> poll_task
-     >> bq_tasks.transform_raw_data() >> snapshot_task
-     >> sync_task)
+    raw_task >> poll_task\
+     >> bq_tasks.transform_raw_data() >> bq_tasks.create_snapshot_task()\
+     >> vt_tasks.sync_feature_view() >> vt_tasks.kickoff_vertex_pipeline()
 
 process_training_data()

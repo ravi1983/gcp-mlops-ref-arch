@@ -63,22 +63,22 @@ def transform_raw_data():
                 'query': """
                     CREATE OR REPLACE TABLE `{{ params.project }}.{{ params.dataset }}.{{ params.feature_table }}` AS
                     SELECT
-                        *,
-                        -- Calculate 24h rolling average per card
+                        merchant,
+                        category,
+                        amt,
+                        cc_num,
+                        city_pop,
+                        is_fraud,
                         AVG(amt) OVER (
                             PARTITION BY cc_num
                             ORDER BY UNIX_SECONDS(trans_date_trans_time)
                             RANGE BETWEEN 86400 PRECEDING AND CURRENT ROW
                         ) AS avg_transaction_val_24h,
-                
-                        -- Count failed attempts (assuming you have a status or is_fraud label)
                         COUNTIF(is_fraud = 1) OVER (
                             PARTITION BY cc_num
                             ORDER BY UNIX_SECONDS(trans_date_trans_time)
                             RANGE BETWEEN 86400 PRECEDING AND CURRENT ROW
                         ) AS failed_attempts_count,
-                
-                        -- Feature Store requirement
                         trans_date_trans_time AS feature_timestamp
                     FROM `{{ params.project }}.{{ params.dataset }}.{{ params.raw_table }}`
                 """,

@@ -48,7 +48,7 @@ The architecture supports continuous training, automated evaluation, and conditi
 
 ## Architecture Diagram
 
-PLACEHOLDER: INSERT DESIGN DIAGRAM IMAGE HERE
+![Architecture Diagram](images/Design.png)
 
 ---
 
@@ -273,3 +273,4 @@ Contributions are welcome. Please open issues or submit pull requests.
 ---
 
 This repository serves as a reference implementation for scalable, production-ready MLOps on Google Cloud Platform. It is designed as a foundation and should be hardened appropriately before enterprise deployment.
+

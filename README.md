@@ -2,23 +2,23 @@
 
 Production-grade reference architecture for building, training, evaluating, and deploying machine learning models on Google Cloud Platform using OpenTofu, BigQuery, Airflow, Vertex AI, and Vertex AI Feature Store.
 
-This repository demonstrates a complete MLOps workflow using the Kaggle Credit Card Fraud Detection dataset as a working example.
+This repository demonstrates a complete MLOps workflow using the Kaggle Credit Card Fraud Detection dataset.
 
 ---
 
 ## Overview
 
-This project implements a fully automated, event-driven MLOps architecture that:
+This project implements an automated, event-driven MLOps architecture that:
 
-1. Provisions infrastructure using OpenTofu.
-2. Ingests and transforms data using Airflow and BigQuery.
-3. Maintains data lineage via BigQuery table snapshots.
-4. Trains and evaluates models using Vertex AI Pipelines and AutoML.
-5. Deploys models to a Vertex AI online endpoint based on performance thresholds.
-6. Serves real-time predictions through a Cloud Function API.
-7. Retrieves online features from Vertex AI Feature Store for inference consistency.
+1. Provisions infrastructure using OpenTofu  
+2. Ingests and transforms data with Airflow and BigQuery  
+3. Preserves lineage using BigQuery snapshots  
+4. Trains and evaluates models with Vertex AI Pipelines and AutoML  
+5. Deploys models conditionally based on performance thresholds  
+6. Serves real-time predictions via Cloud Function  
+7. Retrieves online features from Vertex AI Feature Store  
 
-The architecture supports continuous training, automated evaluation, and conditional deployment.
+The system supports continuous retraining and automated model promotion.
 
 ---
 
@@ -26,23 +26,23 @@ The architecture supports continuous training, automated evaluation, and conditi
 
 ### End-to-End Flow
 
-1. Data lands in Google Cloud Storage (GCS).
-2. Airflow DAG is triggered on object create/update event.
-3. Data is copied into a raw BigQuery table.
-4. Data is transformed and loaded into a training table.
-5. A snapshot of the training table is created to preserve lineage and reproducibility.
-6. Feature View is synchronized.
-7. Vertex AI Pipeline is triggered.
+1. Data lands in GCS.  
+2. Airflow triggers on object creation/update.  
+3. Load data into raw BigQuery table.  
+4. Transform raw to training table.  
+5. Create immutable snapshot for lineage.  
+6. Sync Feature View.  
+7. Trigger Vertex AI Pipeline.  
 8. Vertex Pipeline:
-   - Creates a dataset from the snapshot.
-   - Runs AutoML training.
-   - Evaluates model metrics.
-   - If performance meets threshold, deploys model to endpoint.
-9. Cloud Function API:
-   - Accepts card number as input.
-   - Fetches features from Feature Store.
-   - Calls deployed model endpoint.
-   - Returns fraud prediction.
+   - Create dataset from snapshot  
+   - Train using AutoML  
+   - Evaluate metrics  
+   - Deploy if threshold is met  
+9. Cloud Function:
+   - Accept card_number  
+   - Fetch features  
+   - Invoke endpoint  
+   - Return prediction  
 
 ---
 
@@ -54,18 +54,14 @@ The architecture supports continuous training, automated evaluation, and conditi
 
 ## Infrastructure as Code (OpenTofu)
 
-OpenTofu provisions the following resources:
+OpenTofu provisions:
 
-- BigQuery datasets (raw and training)
-- BigQuery tables
-- BigQuery snapshot table
-- Service accounts
-- IAM bindings
-- Cloud Function
-- Vertex AI Feature Store
-- Feature View
-- Vertex AI pipeline components
-- Required project-level configurations
+- BigQuery datasets and tables  
+- Snapshot tables  
+- Service accounts and IAM bindings  
+- Cloud Function  
+- Vertex AI Feature Store and Feature View  
+- Vertex pipeline components  
 
 Infrastructure is declarative and reproducible.
 
@@ -73,204 +69,137 @@ Infrastructure is declarative and reproducible.
 
 ## Data Pipeline (Airflow)
 
-Airflow DAG is triggered when an object is created or updated in GCS.
+Triggered by GCS object events.
 
-### DAG Steps
+Pipeline steps:
 
-1. Load incoming file into BigQuery raw table.
-2. Transform raw table into training table.
-3. Create snapshot of training table.
-   - Enables data lineage.
-   - Ensures reproducibility.
-4. Sync Feature View.
-5. Trigger Vertex AI Pipeline.
+1. Load data into raw table  
+2. Transform into training table  
+3. Snapshot training table  
+4. Sync Feature View  
+5. Trigger Vertex Pipeline  
 
-Snapshots ensure that every model version is traceable to a specific immutable dataset.
+Snapshots ensure dataset immutability and reproducibility.
 
 ---
 
 ## Model Training and Deployment (Vertex AI)
 
-The Vertex AI Pipeline performs:
+Vertex Pipeline:
 
-1. Dataset creation from BigQuery snapshot.
-2. AutoML training job execution.
-3. Model evaluation against defined metrics (e.g., AUC, precision, recall).
-4. Threshold comparison logic.
-5. Conditional deployment:
-   - Register model.
-   - Deploy to Vertex AI endpoint if threshold is met.
+1. Create dataset from snapshot  
+2. Train with AutoML  
+3. Evaluate performance  
+4. Deploy to endpoint if metrics meet threshold  
 
-This enables automated promotion of models based on measurable performance.
+Enables automated and controlled model promotion.
 
 ---
 
 ## Online Inference Architecture
 
-The Cloud Function acts as the API entry point for predictions.
+Cloud Function serves predictions:
 
-### Inference Flow
+1. Accept card_number  
+2. Retrieve features from Feature Store  
+3. Call Vertex endpoint  
+4. Return fraud prediction  
 
-1. Accept card_number as input.
-2. Retrieve features from Vertex AI Feature Store using Feature View.
-3. Call deployed Vertex AI endpoint with card number and features.
-4. Return prediction response to caller.
-
-This guarantees feature parity between training and serving environments.
-
----
-
-## Repository Structure
-
-.
-├── opentofu/              # Infrastructure as Code definitions  
-├── airflow/               # DAG definitions  
-├── vertex_pipeline/       # Training and evaluation pipeline components  
-├── cloud_function/        # Inference API implementation  
-├── sql/                   # Transformation queries  
-├── diagrams/              # Architecture diagrams  
-└── README.md  
+Ensures training-serving feature consistency.
 
 ---
 
 ## Dataset
 
-Source: Kaggle Credit Card Fraud Detection Dataset.
+Kaggle Credit Card Fraud Detection dataset.
 
-- Binary classification problem.
-- Highly imbalanced dataset.
-- Used to demonstrate fraud detection use case in a production-style MLOps architecture.
+- Binary classification  
+- Highly imbalanced  
+- Used to simulate fraud detection workflow  
 
 ---
 
 ## Production Readiness Callouts
 
-Before using this architecture in production, address the following critical items:
+Before production deployment, address the following:
 
-### 1. Enforce Least Privilege for Service Accounts
+### 1. Least Privilege IAM
 
-- Avoid broad project-level roles.
-- Scope IAM at dataset, table, pipeline, and endpoint level.
-- Separate service accounts for:
-  - Training
-  - Pipeline orchestration
-  - Feature Store access
-  - Inference
-- Remove unused permissions.
+- Avoid project-wide roles  
+- Scope permissions narrowly  
+- Separate service accounts by responsibility  
+- Remove unused permissions  
 
-### 2. Enable Canary Deployment for Model Releases
+### 2. Canary Model Deployment
 
-- Do not route 100% traffic immediately.
-- Use Vertex Endpoint traffic splitting.
-- Gradually increase traffic to new model version.
-- Monitor performance before full rollout.
+- Use traffic splitting on Vertex Endpoint  
+- Gradually shift traffic  
+- Monitor before full rollout  
 
-### 3. Enable Model Monitoring
+### 3. Model Monitoring
 
-- Configure Vertex Model Monitoring.
-- Track feature skew and drift.
-- Track prediction distribution drift.
-- Configure alerts through Cloud Monitoring.
-- Continuously validate production model health.
+- Enable Vertex Model Monitoring  
+- Track feature and prediction drift  
+- Configure alerts  
 
-### 4. Optimize Online Feature Store for Spiky Requests
+### 4. Optimize Online Feature Store
 
-- Configure online serving capacity appropriately.
-- Tune scaling configuration for burst traffic.
-- Load test inference endpoints.
-- Balance latency and throughput requirements.
+- Configure for burst traffic  
+- Tune scaling and latency  
+- Load test inference path  
 
 ---
 
 ## Continuous MLOps Capabilities
 
-This architecture supports:
-
-- Event-driven retraining.
-- Automated evaluation and conditional deployment.
-- Immutable dataset snapshots for lineage.
-- Feature consistency between offline and online paths.
-- Infrastructure as Code reproducibility.
-- Modular and extensible pipeline design.
+- Event-driven retraining  
+- Automated evaluation and promotion  
+- Immutable datasets for lineage  
+- Offline and online feature consistency  
+- Infrastructure as Code  
+- Modular pipeline design  
 
 ---
 
 ## Prerequisites
 
-- Google Cloud Project.
-- OpenTofu installed.
-- gcloud CLI configured.
-- Python 3.10+.
-- Airflow environment.
-- Vertex AI API enabled.
-- BigQuery API enabled.
-- Cloud Functions API enabled.
-
----
-
-## Deployment Steps
-
-1. Initialize OpenTofu:
-
-   tofu init
-
-2. Apply infrastructure:
-
-   tofu apply
-
-3. Deploy Airflow DAGs to your Airflow environment.
-
-4. Deploy Cloud Function:
-
-   gcloud functions deploy <FUNCTION_NAME> --runtime python310 --trigger-http --allow-unauthenticated
+- GCP project  
+- OpenTofu installed  
+- gcloud CLI configured  
+- Python 3.10+  
+- Airflow environment  
+- Vertex AI, BigQuery, and Cloud Functions APIs enabled  
 
 ---
 
 ## Security Considerations
 
-- Use CMEK if regulatory requirements demand it.
-- Restrict network egress where possible.
-- Enable audit logging.
-- Avoid long-lived service account keys.
-- Apply VPC Service Controls if required.
-- Enable Cloud Monitoring and alerting.
+- Enable CMEK if required  
+- Restrict network egress  
+- Enable audit logging  
+- Avoid long-lived service account keys  
+- Use VPC Service Controls if needed  
 
 ---
 
 ## Design Principles
 
-- Infrastructure as Code first.
-- Immutable training datasets.
-- Event-driven architecture.
-- Automated governance.
-- Continuous evaluation.
-- Separation of concerns.
-- Reproducibility and traceability.
+- Infrastructure as Code  
+- Immutable datasets  
+- Event-driven orchestration  
+- Automated governance  
+- Reproducibility  
 
 ---
 
 ## Future Enhancements
 
-- CI/CD integration for pipeline validation.
-- Blue/Green model deployment strategy.
-- Automated rollback workflows.
-- Feature registry governance workflows.
-- Cost monitoring dashboards.
-- Metadata tracking visualization.
+- CI/CD for pipelines  
+- Blue/Green deployment  
+- Automated rollback  
+- Feature governance workflows  
+- Cost monitoring  
 
 ---
 
-## License
-
-Specify your preferred license (e.g., MIT License).
-
----
-
-## Contributions
-
-Contributions are welcome. Please open issues or submit pull requests.
-
----
-
-This repository serves as a reference implementation for scalable, production-ready MLOps on Google Cloud Platform. It is designed as a foundation and should be hardened appropriately before enterprise deployment.
-
+This repository serves as a reference implementation for scalable, production-ready MLOps on GCP. It is intended as a foundation and should be hardened appropriately before enterprise deployment.

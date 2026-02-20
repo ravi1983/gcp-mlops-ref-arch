@@ -20,6 +20,7 @@ def cc_fraud_detection_model_pipeline(
     # Train model
     dataset = steps.create_dataset(project, location, dataset_name, snapshot_table_name)
     training_op = steps.trigger_automl_training(project, location, training_name, dataset)
+    # Downgrade base image to avoid numpy 2.0 error
     training_op.container_spec.image = "gcr.io/ml-pipeline/google-cloud-pipeline-components:2.16.1"
 
     # Eval and log model

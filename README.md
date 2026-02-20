@@ -161,37 +161,6 @@ Before production deployment, address the following:
 
 ---
 
-## Prerequisites
-
-- GCP project  
-- OpenTofu installed  
-- gcloud CLI configured  
-- Python 3.10+  
-- Airflow environment  
-- Vertex AI, BigQuery, and Cloud Functions APIs enabled  
-
----
-
-## Security Considerations
-
-- Enable CMEK if required  
-- Restrict network egress  
-- Enable audit logging  
-- Avoid long-lived service account keys  
-- Use VPC Service Controls if needed  
-
----
-
-## Design Principles
-
-- Infrastructure as Code  
-- Immutable datasets  
-- Event-driven orchestration  
-- Automated governance  
-- Reproducibility  
-
----
-
 ## Future Enhancements
 
 - CI/CD for pipelines  
@@ -203,3 +172,4 @@ Before production deployment, address the following:
 ---
 
 This repository serves as a reference implementation for scalable, production-ready MLOps on GCP. It is intended as a foundation and should be hardened appropriately before enterprise deployment.
+

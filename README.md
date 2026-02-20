@@ -150,17 +150,6 @@ Before production deployment, address the following:
 
 ---
 
-## Continuous MLOps Capabilities
-
-- Event-driven retraining  
-- Automated evaluation and promotion  
-- Immutable datasets for lineage  
-- Offline and online feature consistency  
-- Infrastructure as Code  
-- Modular pipeline design  
-
----
-
 ## Future Enhancements
 
 - CI/CD for pipelines  
@@ -172,4 +161,5 @@ Before production deployment, address the following:
 ---
 
 This repository serves as a reference implementation for scalable, production-ready MLOps on GCP. It is intended as a foundation and should be hardened appropriately before enterprise deployment.
+
 
